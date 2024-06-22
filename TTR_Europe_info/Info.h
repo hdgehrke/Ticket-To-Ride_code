@@ -8,12 +8,13 @@ using namespace std;
 
 class Info {
 	public:
-		int numTrains
-		int numStations
-		int numRoutes
-		int longBonus
-		map<int, int> trainScoring
-		map<string, int> colorCount
+		int numTrains;
+		int numStations;
+		int numRoutes;
+		int numCards;
+		int longBonus;
+		map<int, int> trainScoring;
+		map<string, int> colorCardCount;
 
 		/**
 		* Initializes Info object, known data
