@@ -13,8 +13,8 @@ class Info {
 		int numRoutes;
 		int numCards;
 		int longBonus;
-		map<int, int> trainScoring;
-		map<string, int> colorCardCount;
+		unordered_map<int, int> trainScoring;
+		unordered_map<string, int> colorCardCount;
 
 		/**
 		* Initializes Info object, known data
