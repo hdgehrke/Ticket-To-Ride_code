@@ -13,29 +13,31 @@
 #include <vector>
 using namespace std
 
-class Algorithm (
+class Algorithms (
 	public:
 		/**
 		* Contructor, doesn't have any fields...
 		*/
-		Algorithm();
+		Algorithms();
 
 		/**
 		* Returns the shortest path from city 1 to city 2, given a weighing system
 		* @param city1 The name of the source city
 		* @param city2 The name of the destination city
 		* @param weight The tuple outlining wieghing system
+		* @param board The board object passed in
 		* @return The list of city pairs to connect
 		*/
-		vector<tuple<string, string>> one_city_shortest_path(string const & city1, string const & city2, tuple<int, int, int, int, int> weight);
+		vector<tuple<string, string>> one_city_shortest_path(string const & city1, string const & city2, tuple<int, int, int, int, int> weight, Board::Board board);
 
 		/**
 		* Returns the shortest connecting path between all given cities, given a weighing system
 		* @param city_list The names of the cities to connect
 		* @param weight The tuple outlining weighing system
+		* @param board The board object passed in
 		* @return The list of city pairs to connect
 		*/
-		vector<tuple<string, string>> multi_city_shortest_path(vector<string> city_list, tuple<int, int, int, int, int> weight);
+		vector<tuple<string, string>> multi_city_shortest_path(vector<string> city_list, tuple<int, int, int, int, int> weight, Board::Board board);
 
 		// More to come, likely a rewrite of the above two with certain exclusions in the algorithm... 
 		// But this is probably fine for now...

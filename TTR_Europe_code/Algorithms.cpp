@@ -4,7 +4,7 @@
 
 Algorithms::Algorithms() {}
 
-vecotr<tuple<string, string>> Algorithms::one_city_shortest_path(string const & city1, string const & city2, tuple<int, int, int, int, int> weight) {
+vecotr<tuple<string, string>> Algorithms::one_city_shortest_path(string const & city1, string const & city2, tuple<int, int, int, int, int> weight, Board::Board board) {
 	// pseudocode because i cannot recall c++ syntax for queues... fml
 	
 	// Whip up a priority_queue with tuple<string, string, int> and int dist as the sortable thing...
@@ -28,4 +28,7 @@ vecotr<tuple<string, string>> Algorithms::one_city_shortest_path(string const & 
 	// include smth about if wieght==null -> (1,0,0,0,0)...}
 }
 
-vector<tuple<string, string>> Algorithms::multi_city_shortest_path(vector<string> city_list, tuple<int, int, int, int, int> weight, Board::Board board) {}
+vector<tuple<string, string>> Algorithms::multi_city_shortest_path(vector<string> city_list, tuple<int, int, int, int, int> weight, Board::Board board) {
+	// if len city_list == 0,1 -> return null
+	// tbd
+}
