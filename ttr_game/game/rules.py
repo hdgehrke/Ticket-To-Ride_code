@@ -269,7 +269,10 @@ def step(state: GameState, action_idx: int, asp: ActionSpace,
         _advance_turn(state)
 
     elif atype in (ActionType.KEEP_TICKETS, ActionType.KEEP_INIT_TICKETS):
-        reward = _do_keep_tickets(state, action.slot)
+        try:
+            reward = _do_keep_tickets(state, action.slot)
+        except (ValueError, IndexError):
+            _advance_turn(state)
 
     elif atype == ActionType.CLAIM_ROUTE:
         try:
@@ -279,7 +282,11 @@ def step(state: GameState, action_idx: int, asp: ActionSpace,
             _advance_turn(state)
 
     elif atype == ActionType.PLACE_STATION:
-        _do_place_station(state, asp, action)
+        try:
+            _do_place_station(state, asp, action)
+        except (ValueError, IndexError):
+            # Illegal action (e.g. sampled randomly during RLlib env checks)
+            pass
         _advance_turn(state)
 
     return reward
