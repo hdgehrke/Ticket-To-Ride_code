@@ -118,6 +118,7 @@ def train(
 ) -> None:
     """Run PPO self-play training and save checkpoints periodically."""
     ray.init(ignore_reinit_error=True)
+    checkpoint_dir = os.path.abspath(checkpoint_dir)
     os.makedirs(checkpoint_dir, exist_ok=True)
 
     cfg = build_config(

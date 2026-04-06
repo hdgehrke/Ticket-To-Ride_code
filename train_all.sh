@@ -17,7 +17,7 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 ITERS=1000          # training iterations per player-count model
 CKPT_FREQ=100       # save a checkpoint every N iters
-CKPT_DIR="./checkpoints"
+CKPT_DIR="$(pwd)/checkpoints"
 WORKERS=4           # Ray env-runner processes (leave 2 threads for driver + learner)
 GPUS=1              # RTX 3060: use 1 GPU for the learner
 LOG_DIR="./logs"
@@ -113,8 +113,12 @@ if [[ ${#FAILED[@]} -eq 0 ]]; then
     echo ""
     echo "  Checkpoints:"
     for players in "${PLAYER_COUNTS[@]}"; do
-        latest=$(ls -td "$CKPT_DIR/players_${players}"/checkpoint_* 2>/dev/null | head -1 || echo "  (none)")
-        echo "    $players-player: $latest"
+        ckpt_path="$CKPT_DIR/players_${players}"
+        if [[ -f "$ckpt_path/rllib_checkpoint.json" ]]; then
+            echo "    $players-player: $ckpt_path"
+        else
+            echo "    $players-player: (not found)"
+        fi
     done
 else
     echo "  WARNING: ${#FAILED[@]} job(s) failed: ${FAILED[*]}"

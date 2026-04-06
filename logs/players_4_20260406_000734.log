@@ -1,0 +1,83 @@
+2026-04-06 00:07:56,536	WARNING ppo_torch_rl_module.py:8 -- DeprecationWarning: `ray.rllib.algorithms.ppo.torch.ppo_torch_rl_module.PPOTorchRLModule` has been deprecated. Use `ray.rllib.algorithms.ppo.torch.default_ppo_torch_rl_module.DefaultPPOTorchRLModule` instead. This will raise an error in the future!
+2026-04-06 00:07:58,900	INFO worker.py:2013 -- Started a local Ray instance.
+/opt/anaconda3/lib/python3.13/site-packages/ray/_private/worker.py:2052: FutureWarning: Tip: In future versions of Ray, Ray will no longer override accelerator visible devices env var if num_gpus=0 or num_gpus=None (default). To enable this behavior and turn off this error message, set RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0
+  warnings.warn(
+2026-04-06 00:07:59,579	WARNING algorithm_config.py:5131 -- You are running PPO on the new API stack! This is the new default behavior for this algorithm. If you don't want to use the new API stack, set `config.api_stack(enable_rl_module_and_learner=False,enable_env_runner_and_connector_v2=False)`. For a detailed migration guide, see here: https://docs.ray.io/en/master/rllib/new-api-stack-migration-guide.html
+/opt/anaconda3/lib/python3.13/site-packages/ray/rllib/algorithms/algorithm.py:527: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+`UnifiedLogger` will be removed in Ray 2.7.
+  return UnifiedLogger(config, logdir, loggers=None)
+/opt/anaconda3/lib/python3.13/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `JsonLogger interface is deprecated in favor of the `ray.tune.json.JsonLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/opt/anaconda3/lib/python3.13/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `CSVLogger interface is deprecated in favor of the `ray.tune.csv.CSVLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+/opt/anaconda3/lib/python3.13/site-packages/ray/tune/logger/unified.py:53: RayDeprecationWarning: This API is deprecated and may be removed in future Ray releases. You could suppress this warning by setting env variable PYTHONWARNINGS="ignore::DeprecationWarning"
+The `TBXLogger interface is deprecated in favor of the `ray.tune.tensorboardx.TBXLoggerCallback` interface and will be removed in Ray 2.7.
+  self._loggers.append(cls(self.config, self.logdir, self.trial))
+[2026-04-06 00:07:59,675 E 9809 12487463] core_worker.cc:2232: Actor with class name: 'MultiAgentEnvRunner' and ID: '1f36a08fda67aed47e7a262d01000000' has constructor arguments in the object store and max_restarts > 0. If the arguments in the object store go out of scope or are lost, the actor restart will fail. See https://github.com/ray-project/ray/issues/53727 for more details.
+[36m(MultiAgentEnvRunner pid=9824)[0m DeprecationWarning: `ray.rllib.algorithms.ppo.torch.ppo_torch_rl_module.PPOTorchRLModule` has been deprecated. Use `ray.rllib.algorithms.ppo.torch.default_ppo_torch_rl_module.DefaultPPOTorchRLModule` instead. This will raise an error in the future!
+[36m(MultiAgentEnvRunner pid=9824)[0m DeprecationWarning: `RLModule(config=[RLModuleConfig object])` has been deprecated. Use `RLModule(observation_space=.., action_space=.., inference_only=.., model_config=.., catalog_class=..)` instead. This will raise an error in the future!
+2026-04-06 00:08:01,479	WARNING rl_module.py:463 -- DeprecationWarning: `RLModule(config=[RLModuleConfig object])` has been deprecated. Use `RLModule(observation_space=.., action_space=.., inference_only=.., model_config=.., catalog_class=..)` instead. This will raise an error in the future!
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/hdgehrke/Github_Cloning/Ticket-To-Ride_code/ttr_game/agents/train.py", line 310, in <module>
+    train(
+    ~~~~~^
+        num_players=args.num_players,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+        **exp_kwargs,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/hdgehrke/Github_Cloning/Ticket-To-Ride_code/ttr_game/agents/train.py", line 130, in train
+    algo = cfg.build_algo()
+  File "/opt/anaconda3/lib/python3.13/site-packages/ray/rllib/algorithms/algorithm_config.py", line 1007, in build_algo
+    return algo_class(
+        config=self if not use_copy else copy.deepcopy(self),
+        logger_creator=self.logger_creator,
+    )
+  File "/opt/anaconda3/lib/python3.13/site-packages/ray/rllib/algorithms/algorithm.py", line 583, in __init__
+    super().__init__(
+    ~~~~~~~~~~~~~~~~^
+        config=config,
+        ^^^^^^^^^^^^^^
+        logger_creator=logger_creator,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **kwargs,
+        ^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/lib/python3.13/site-packages/ray/tune/trainable/trainable.py", line 158, in __init__
+    self.setup(copy.deepcopy(self.config))
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.13/site-packages/ray/rllib/algorithms/algorithm.py", line 1011, in setup
+    self.learner_group = self.config.build_learner_group(
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        rl_module_spec=module_spec
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/lib/python3.13/site-packages/ray/rllib/algorithms/algorithm_config.py", line 1355, in build_learner_group
+    learner_group = LearnerGroup(
+        config=self.copy(),
+        module_spec=rl_module_spec,
+        placement_group=placement_group,
+    )
+  File "/opt/anaconda3/lib/python3.13/site-packages/ray/rllib/core/learner/learner_group.py", line 155, in __init__
+    self._learner.build()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/anaconda3/lib/python3.13/site-packages/ray/rllib/algorithms/ppo/ppo_learner.py", line 31, in build
+    super().build()
+    ~~~~~~~~~~~~~^^
+  File "/opt/anaconda3/lib/python3.13/site-packages/ray/rllib/core/learner/torch/torch_learner.py", line 472, in build
+    self._device = get_device(self.config, self.config.num_gpus_per_learner)
+                   ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.13/site-packages/ray/rllib/utils/framework.py", line 88, in get_device
+    assert config.local_gpu_idx < torch.cuda.device_count(), (
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: local_gpu_idx 0 is not a valid GPU ID or is not available.
+[36m(MultiAgentEnvRunner pid=9825)[0m DeprecationWarning: `ray.rllib.algorithms.ppo.torch.ppo_torch_rl_module.PPOTorchRLModule` has been deprecated. Use `ray.rllib.algorithms.ppo.torch.default_ppo_torch_rl_module.DefaultPPOTorchRLModule` instead. This will raise an error in the future![32m [repeated 3x across cluster] (Ray deduplicates logs by default. Set RAY_DEDUP_LOGS=0 to disable log deduplication, or see https://docs.ray.io/en/master/ray-observability/user-guides/configure-logging.html#log-deduplication for more options.)[0m
+[36m(MultiAgentEnvRunner pid=9825)[0m DeprecationWarning: `RLModule(config=[RLModuleConfig object])` has been deprecated. Use `RLModule(observation_space=.., action_space=.., inference_only=.., model_config=.., catalog_class=..)` instead. This will raise an error in the future![32m [repeated 3x across cluster][0m
