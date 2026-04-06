@@ -19,6 +19,7 @@ Station mechanic:
   completion.  Cost: 1/2/3 same-color cards for 1st/2nd/3rd station.
 """
 from __future__ import annotations
+import itertools
 import random
 from typing import Dict, List, Optional, Set, Tuple
 
@@ -500,10 +501,13 @@ def final_scores(state: GameState) -> List[int]:
     for i, player in enumerate(state.players):
         scores[i] += player.stations * 4
 
-    # Destination tickets
+    # Destination tickets — compute optimal station assignment once per player
     for i, player in enumerate(state.players):
+        player_routes = _player_route_set(player, state)
+        borrowed = _optimal_station_routes(player, state, player_routes)
+        all_routes = player_routes | borrowed
         for ticket in player.tickets:
-            if _ticket_completed(ticket, player, state):
+            if _cities_connected(ticket.city1, ticket.city2, all_routes, state.board):
                 scores[i] += ticket.points
             else:
                 scores[i] -= ticket.points
@@ -523,12 +527,12 @@ def _ticket_completed(ticket: DestinationTicket, player: PlayerState,
                        state: GameState) -> bool:
     """
     Return True if `player` has a connected path between ticket.city1 and ticket.city2
-    using their own claimed routes (plus one borrowed route per station).
+    using their own claimed routes plus the optimal assignment of station borrows.
+    Used for mid-game display; final scoring calls _optimal_station_routes directly.
     """
     player_routes = _player_route_set(player, state)
-    station_routes = _station_borrowed_routes(player, state)
-    all_routes = player_routes | station_routes
-    return _cities_connected(ticket.city1, ticket.city2, all_routes, state.board)
+    borrowed = _optimal_station_routes(player, state, player_routes)
+    return _cities_connected(ticket.city1, ticket.city2, player_routes | borrowed, state.board)
 
 
 def _player_route_set(player: PlayerState, state: GameState) -> Set[int]:
@@ -536,20 +540,59 @@ def _player_route_set(player: PlayerState, state: GameState) -> Set[int]:
     return {idx for idx, pid in state.claimed_routes.items() if pid == player.player_id}
 
 
-def _station_borrowed_routes(player: PlayerState, state: GameState) -> Set[int]:
+def _optimal_station_routes(player: PlayerState, state: GameState,
+                             player_routes: Set[int]) -> Set[int]:
     """
-    For each city where the player has a station, they may borrow ONE incoming
-    route claimed by another player.  We greedily add all such routes (for
-    simplicity; optimal station assignment is complex).
+    Choose at most one opponent-claimed route per station city to borrow,
+    maximising the ticket points recovered from tickets not yet completable
+    with the player's own routes alone.
+
+    Search space: product(candidate_routes_per_station) — at most ~6^3 = 216
+    combinations with 3 stations, so brute-force is fine.
     """
-    borrowed: Set[int] = set()
+    if not player.station_cities:
+        return set()
+
+    board = state.board
+    # Build a fast seg→index lookup to avoid O(n) list.index() calls
+    route_index: Dict = {seg: i for i, seg in enumerate(board.routes)}
+
+    # For each station city collect the opponent-claimed routes adjacent to it
+    station_candidates: List[List[int]] = []
     for city in player.station_cities:
-        for seg in state.board.adj.get(city, []):
-            route_idx = state.board.routes.index(seg)
-            owner = state.claimed_routes.get(route_idx)
+        cands: List[int] = []
+        for seg in board.adj.get(city, []):
+            idx = route_index.get(seg)
+            if idx is None:
+                continue
+            owner = state.claimed_routes.get(idx)
             if owner is not None and owner != player.player_id:
-                borrowed.add(route_idx)
-    return borrowed
+                cands.append(idx)
+        station_candidates.append(cands)
+
+    # Only consider tickets that are currently failing (stations can't help the rest)
+    failed_tickets = [
+        t for t in player.tickets
+        if not _cities_connected(t.city1, t.city2, player_routes, board)
+    ]
+    if not failed_tickets:
+        return set()
+
+    # Try every combination: borrow one route per station, or skip that station
+    best_points = 0
+    best_borrowed: Set[int] = set()
+    for combo in itertools.product(*[[None] + cands for cands in station_candidates]):
+        borrowed = {r for r in combo if r is not None}
+        all_routes = player_routes | borrowed
+        points = sum(
+            t.points for t in failed_tickets
+            if _cities_connected(t.city1, t.city2, all_routes, board)
+        )
+        if points > best_points:
+            best_points = points
+            best_borrowed = borrowed
+
+    return best_borrowed
 
 
 def _cities_connected(city1: str, city2: str, route_set: Set[int],
