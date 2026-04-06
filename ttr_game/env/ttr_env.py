@@ -31,7 +31,10 @@ from typing import Dict, Iterator, List, Optional
 
 import numpy as np
 from pettingzoo import AECEnv
-from pettingzoo.utils import agent_selector
+try:
+    from pettingzoo.utils.agent_selector import AgentSelector as agent_selector
+except ImportError:
+    from pettingzoo.utils import agent_selector  # type: ignore[assignment]  # pre-1.24
 from gymnasium import spaces
 
 from ..game.actions import ActionSpace
