@@ -1,0 +1,14 @@
+# Core game engine (no dependencies beyond stdlib)
+# RL stack
+pettingzoo>=1.24.0
+gymnasium>=0.29.0
+ray[rllib]>=2.9.0
+torch>=2.0.0
+supersuit>=3.9.0
+# Web server
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+websockets>=12.0
+pydantic>=2.0.0
+# Dev / test
+pytest>=8.0.0
