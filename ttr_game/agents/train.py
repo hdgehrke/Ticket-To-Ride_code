@@ -84,8 +84,10 @@ def build_config(
             gamma=0.99,
             lambda_=0.95,
             clip_param=0.2,
-            vf_clip_param=10.0,
+            vf_clip_param=10.0,   # fine now that rewards are scaled to ~0–8 range
             entropy_coeff=0.01,
+            grad_clip=0.5,
+            grad_clip_by="global_norm",
         )
         .rl_module(
             rl_module_spec=RLModuleSpec(module_class=ActionMaskingTorchRLModule),

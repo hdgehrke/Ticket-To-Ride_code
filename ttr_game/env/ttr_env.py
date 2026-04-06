@@ -49,6 +49,11 @@ from ..game.rules import final_scores, is_terminal, legal_actions, step
 from ..game.state import GamePhase, GameState, setup_game
 
 
+# Scale all rewards so episode returns land in roughly the 0–10 range.
+# Raw game scores are 50–150+; PPO's default vf_clip_param=10 is calibrated
+# for unit-scale rewards, so without this the value network diverges.
+REWARD_SCALE: float = 1.0 / 20.0
+
 MAX_PLAYERS = 5
 NUM_TICKETS = len(TICKETS)
 NUM_CARD_TYPES = len(COLORS) + 1  # 8 colors + loco
@@ -202,7 +207,7 @@ class TicketToRideEnv(AECEnv):
             action = 0  # fallback; shouldn't happen in normal play
 
         # Apply action
-        reward = step(self._state, action, self._asp, self._rng)
+        reward = step(self._state, action, self._asp, self._rng) * REWARD_SCALE
         self._rewards[current_agent] = reward
         self._cumulative_rewards[current_agent] += reward
 
@@ -211,7 +216,7 @@ class TicketToRideEnv(AECEnv):
             scores = final_scores(self._state)
             # Distribute final rewards
             for i, agent in enumerate(self.possible_agents):
-                final_r = float(scores[i])
+                final_r = float(scores[i]) * REWARD_SCALE
                 self._rewards[agent] += final_r
                 self._cumulative_rewards[agent] += final_r
                 self._terminations[agent] = True
