@@ -12,6 +12,8 @@ A complete implementation of Ticket to Ride: Europe with:
 pip install -r requirements.txt
 ```
 
+> **Note:** If you see a "No supported WebSocket library detected" warning from uvicorn, run `pip install websockets` separately (known issue with some Anaconda environments).
+
 ---
 
 ## Playing Hot-Seat
@@ -139,11 +141,43 @@ pytest ttr_game/tests/ -v
 
 ---
 
-## Web Multiplayer Server (in development)
+## Web Multiplayer (Browser UI)
 
-A FastAPI + WebSocket server for playing over a network is implemented but the frontend is not yet built.
+Play in a browser with any mix of human and AI players. Supports 2–5 players over a local network.
 
+### Development (two terminals)
+
+**Terminal 1 — backend:**
 ```bash
 uvicorn ttr_game.server.app:app --reload
-# API docs at http://localhost:8000/docs
 ```
+
+**Terminal 2 — frontend dev server:**
+```bash
+cd frontend
+npm install   # first time only
+npm run dev
+```
+
+Open **http://localhost:5173** in each player's browser. On a LAN, replace `localhost` with your machine's IP address.
+
+### Production (single server)
+
+Build the frontend once, then the backend serves everything:
+
+```bash
+cd frontend && npm run build && cd ..
+uvicorn ttr_game.server.app:app --host 0.0.0.0 --port 8000
+```
+
+Open **http://\<your-ip\>:8000/app** in each player's browser.
+
+### Creating a game
+
+1. Enter a name for each player slot (2–5 players).
+2. Select which slots are AI-controlled and which seat is yours.
+3. Click **Start Game** — the board loads automatically.
+4. AI players take their turns automatically; you'll be prompted when it's your turn.
+
+> **Note:** Sessions are in-memory only — they are lost if the server restarts.
+> API docs available at **http://localhost:8000/docs**.

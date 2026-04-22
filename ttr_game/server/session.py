@@ -41,7 +41,7 @@ class GameSession:
         reward = step(self.state, action_idx, self.asp, self.rng)
         action = self.asp.decode(action_idx)
         self.log.append(
-            f"Player {self.state.players[(self.state.current_player - 1) % len(self.players)].name} "
+            f"Player {self.players[(self.state.current_player - 1) % len(self.players)].name} "
             f"played: {action}"
         )
         return reward

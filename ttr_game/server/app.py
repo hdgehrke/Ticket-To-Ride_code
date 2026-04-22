@@ -24,8 +24,11 @@ import json
 import logging
 from typing import Dict, List, Optional, Set
 
+import os
+
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from .session import GameSession, SessionManager
@@ -44,6 +47,11 @@ app.add_middleware(
 )
 
 session_manager = SessionManager()
+
+# Serve built frontend if the dist directory exists
+_dist_dir = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")
+if os.path.isdir(_dist_dir):
+    app.mount("/app", StaticFiles(directory=_dist_dir, html=True), name="static")
 
 # WebSocket connection registry: session_id → {player_id → WebSocket}
 _connections: Dict[str, Dict[int, WebSocket]] = {}
