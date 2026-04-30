@@ -27,6 +27,7 @@ class GamePhase(Enum):
     MAIN_TURN = auto()                 # current player selects their action
     SECOND_DRAW = auto()               # current player draws their 2nd card
     TICKET_SELECTION = auto()          # current player keeps ≥1 drawn ticket
+    TUNNEL_RESOLUTION = auto()         # human player decides whether to pay tunnel extra cost
     FINAL_ROUND = auto()               # last round after someone hits ≤2 trains
     GAME_OVER = auto()
 
@@ -94,6 +95,16 @@ class GameState:
     init_tickets_done: int = 0
     # During SECOND_DRAW: whether first draw was from face-up (and which slot)
     first_draw_was_loco: bool = False
+    # Whether to pause at TUNNEL_RESOLUTION for human input (False = RL auto-resolve)
+    interactive_tunnels: bool = False
+    # Tunnel resolution pause state (set during TUNNEL_RESOLUTION phase)
+    tunnel_route_idx: Optional[int] = None
+    tunnel_color_idx: int = 0
+    tunnel_cards: List[str] = field(default_factory=list)
+    tunnel_extra_cost: int = 0
+    tunnel_color_paid: int = 0
+    tunnel_loco_color_paid: int = 0
+    tunnel_ferry_locos_paid: int = 0
 
 
 def build_deck(rng: random.Random) -> List[str]:
@@ -106,7 +117,8 @@ def build_deck(rng: random.Random) -> List[str]:
 
 
 def setup_game(num_players: int, seed: Optional[int] = None,
-               expansion: str = EXPANSION_BASE) -> GameState:
+               expansion: str = EXPANSION_BASE,
+               interactive_tunnels: bool = False) -> GameState:
     """
     Initialize a new game for 2–5 players.
 
@@ -181,6 +193,7 @@ def setup_game(num_players: int, seed: Optional[int] = None,
         phase=initial_phase,
         pending_tickets=pending,
         init_tickets_done=0,
+        interactive_tunnels=interactive_tunnels,
     )
 
 

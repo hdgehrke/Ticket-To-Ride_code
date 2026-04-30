@@ -32,7 +32,12 @@ export interface PublicState {
   deck_size: number;
   discard_size: number;
   claimed_routes: Record<string, number>; // route_idx → player_id
+  cities: string[];   // ordered city names — index matches PLACE_STATION action city_idx
   routes: RouteInfo[];
+  tunnel_cards: string[] | null;
+  tunnel_extra_cost: number | null;
+  tunnel_pay_action: number | null;
+  tunnel_decline_action: number | null;
 }
 
 export interface Ticket {
@@ -49,10 +54,28 @@ export interface PrivateState {
   legal_actions: number[];
 }
 
+export interface TicketResult {
+  city1: string;
+  city2: string;
+  points: number;
+  completed: boolean;
+}
+
+export interface PlayerScoreBreakdown {
+  route_score: number;
+  unused_stations: number;
+  station_bonus: number;
+  tickets: TicketResult[];
+  ticket_total: number;
+  longest_route_length: number;
+  longest_route_bonus: number;
+  total: number;
+}
+
 export type ServerMessage =
   | { type: "state"; public: PublicState; private: PrivateState }
   | { type: "error"; message: string }
-  | { type: "game_over"; scores: number[]; players: string[] };
+  | { type: "game_over"; scores: number[]; players: string[]; breakdown: PlayerScoreBreakdown[] };
 
 // Action space layout from actions.py
 export const ACTION_DRAW_FACE_UP_START = 0;      // 0–4

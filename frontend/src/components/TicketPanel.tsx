@@ -10,10 +10,11 @@ interface Props {
   phase: string;
   onKeepTickets: (actionIdx: number) => void;
   onDrawTickets: () => void;
+  onTicketHover: (ticket: Ticket | null) => void;
 }
 
 export function TicketPanel({
-  tickets, pendingTickets, legalActions, isMyTurn, phase, onKeepTickets, onDrawTickets,
+  tickets, pendingTickets, legalActions, isMyTurn, phase, onKeepTickets, onDrawTickets, onTicketHover,
 }: Props) {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const isTicketSelection = phase === "TICKET_SELECTION";
@@ -67,7 +68,12 @@ export function TicketPanel({
         <div className="ticket-selection">
           <p><strong>Choose tickets to keep{isTicketSelection ? " (≥1)" : ""}:</strong></p>
           {pendingTickets!.map((t, i) => (
-            <label key={i} className={`ticket-option ${selected.has(i) ? "selected" : ""}`}>
+            <label
+              key={i}
+              className={`ticket-option ${selected.has(i) ? "selected" : ""}`}
+              onMouseEnter={() => onTicketHover(t)}
+              onMouseLeave={() => onTicketHover(null)}
+            >
               <input
                 type="checkbox"
                 checked={selected.has(i)}
@@ -90,7 +96,12 @@ export function TicketPanel({
       <div className="ticket-list">
         {tickets.length === 0 && <p className="muted">No tickets yet.</p>}
         {tickets.map((t, i) => (
-          <div key={i} className="ticket-item">
+          <div
+            key={i}
+            className="ticket-item"
+            onMouseEnter={() => onTicketHover(t)}
+            onMouseLeave={() => onTicketHover(null)}
+          >
             <span>{t.city1} → {t.city2}</span>
             <span className="ticket-pts">{t.points}pts</span>
             {t.is_long && <span className="long-badge">Long</span>}

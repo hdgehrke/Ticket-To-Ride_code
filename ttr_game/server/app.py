@@ -166,6 +166,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str, player_idx: 
                     "type": "game_over",
                     "scores": scores,
                     "players": [p.name for p in session.players],
+                    "breakdown": session.final_score_breakdown(),
                 })
             else:
                 await _broadcast_state(session_id, session)
@@ -220,6 +221,7 @@ async def _maybe_play_ai(session_id: str, session: GameSession) -> None:
                 "type": "game_over",
                 "scores": scores,
                 "players": [p.name for p in session.players],
+                "breakdown": session.final_score_breakdown(),
             })
         else:
             await _broadcast_state(session_id, session)

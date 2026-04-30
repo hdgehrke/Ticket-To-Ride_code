@@ -60,8 +60,9 @@ NUM_CARD_TYPES = len(COLORS) + 1  # 8 colors + loco
 NUM_FACE_UP = 5
 # One-hot encoding for a card slot: 9 card types + 1 empty = 10
 CARD_SLOT_SIZE = NUM_CARD_TYPES + 1
-# Game phase one-hot: 5 phases (INITIAL_TICKET_SELECTION, MAIN_TURN, SECOND_DRAW, TICKET_SELECTION, FINAL_ROUND/GAME_OVER)
-NUM_PHASES = 5
+# Game phase one-hot: 6 phases (INITIAL_TICKET_SELECTION, MAIN_TURN, SECOND_DRAW,
+#                                TICKET_SELECTION, TUNNEL_RESOLUTION, FINAL_ROUND/GAME_OVER)
+NUM_PHASES = 6
 
 # All supported expansion variants in a fixed order (used for one-hot encoding)
 ALL_EXPANSIONS: List[str] = [
@@ -97,6 +98,7 @@ def _obs_size(board: Board) -> int:
         + 3                                     # own trains, stations, score (normalized)
         + (MAX_PLAYERS - 1) * 3                 # opponents' trains, stations, score
         + NUM_PHASES                            # game phase (one-hot)
+        + 1                                     # tunnel_extra_cost (normalized, 0 outside TUNNEL_RESOLUTION)
         + 1                                     # deck size (normalized)
         + NUM_EXPANSIONS                        # active expansion (one-hot)
     )
@@ -176,7 +178,8 @@ class TicketToRideEnv(AECEnv):
         # Pick an expansion for this episode
         self._current_expansion = self._expansion_rng.choice(self._expansion_pool)
         self._state = setup_game(self.num_players, seed=self._seed,
-                                 expansion=self._current_expansion)
+                                 expansion=self._current_expansion,
+                                 interactive_tunnels=True)
         self.agents = self.possible_agents[:]
         self._cumulative_rewards = {a: 0.0 for a in self.agents}
         self._rewards = {a: 0.0 for a in self.agents}
@@ -323,13 +326,18 @@ class TicketToRideEnv(AECEnv):
             GamePhase.MAIN_TURN: 1,
             GamePhase.SECOND_DRAW: 2,
             GamePhase.TICKET_SELECTION: 3,
-            GamePhase.FINAL_ROUND: 4,
-            GamePhase.GAME_OVER: 4,
+            GamePhase.TUNNEL_RESOLUTION: 4,
+            GamePhase.FINAL_ROUND: 5,
+            GamePhase.GAME_OVER: 5,
         }
         phase_enc = np.zeros(NUM_PHASES, dtype=np.float32)
-        phase_enc[phase_map.get(state.phase, 4)] = 1.0
+        phase_enc[phase_map.get(state.phase, 5)] = 1.0
         obs[ptr:ptr + NUM_PHASES] = phase_enc
         ptr += NUM_PHASES
+
+        # Tunnel extra cost (0 outside TUNNEL_RESOLUTION; 1–3 during it, normalized)
+        obs[ptr] = state.tunnel_extra_cost / 3.0
+        ptr += 1
 
         # Deck size (normalized)
         obs[ptr] = len(state.deck) / 110.0

@@ -8,69 +8,69 @@ export interface CityCoord {
 
 export const CITY_COORDS: Record<string, CityCoord> = {
   // British Isles
-  Edinburgh:     { x: 325,  y:  80 },
-  London:        { x: 355,  y: 165 },
+  Edinburgh:     { x: 240,  y:  95 },
+  London:        { x: 240,  y: 190 },
 
   // Iberian Peninsula
-  Lisboa:        { x: 195,  y: 435 },
-  Cadiz:         { x: 230,  y: 510 },
-  Madrid:        { x: 285,  y: 435 },
-  Pamplona:      { x: 355,  y: 375 },
-  Barcelona:     { x: 415,  y: 420 },
+  Lisboa:        { x:  20,  y: 450 },
+  Cadiz:         { x:  50,  y: 525 },
+  Madrid:        { x: 110,  y: 465 },
+  Pamplona:      { x: 150,  y: 415 },
+  Barcelona:     { x: 220,  y: 475 },
 
   // France
-  Dieppe:        { x: 380,  y: 210 },
-  Brest:         { x: 280,  y: 250 },
-  Paris:         { x: 395,  y: 265 },
-  Marseille:     { x: 440,  y: 390 },
+  Dieppe:        { x: 230,  y: 250 },
+  Brest:         { x: 155,  y: 270 },
+  Paris:         { x: 250,  y: 305 },
+  Marseille:     { x: 285,  y: 445 },
 
   // Benelux / Germany
-  Amsterdam:     { x: 460,  y: 175 },
-  Bruxelles:     { x: 435,  y: 225 },
-  Frankfurt:     { x: 505,  y: 240 },
-  Essen:         { x: 495,  y: 185 },
-  Munchen:       { x: 525,  y: 310 },
-  Zurich:        { x: 480,  y: 340 },
+  Amsterdam:     { x: 315,  y: 200 },
+  Bruxelles:     { x: 300,  y: 250 },
+  Frankfurt:     { x: 350,  y: 290 },
+  Essen:         { x: 375,  y: 225 },
+  Munchen:       { x: 410,  y: 345 },
+  Zurich:        { x: 350,  y: 367 },
 
   // Scandinavia
-  Kobenhavn:     { x: 535,  y: 120 },
-  Stockholm:     { x: 605,  y:  75 },
-  Petrograd:     { x: 750,  y:  65 },
+  Kobenhavn:     { x: 420,  y: 160 },
+  Stockholm:     { x: 537,  y:  70 },
+  Petrograd:     { x: 710,  y:  52 },
 
   // Central Europe
-  Berlin:        { x: 560,  y: 185 },
-  Danzig:        { x: 625,  y: 185 },
-  Warszawa:      { x: 665,  y: 240 },
-  Wien:          { x: 605,  y: 310 },
-  Budapest:      { x: 655,  y: 350 },
+  Berlin:        { x: 448,  y: 235 },
+  Danzig:        { x: 539,  y: 200 },
+  Warszawa:      { x: 578,  y: 250 },
+  Wien:          { x: 485,  y: 355 },
+  Budapest:      { x: 540,  y: 385 },
 
   // Italy
-  Venezia:       { x: 545,  y: 365 },
-  Roma:          { x: 555,  y: 455 },
-  Brindisi:      { x: 615,  y: 500 },
-  Palermo:       { x: 570,  y: 555 },
+  Venezia:       { x: 415,  y: 415 },
+  Roma:          { x: 405,  y: 510 },
+  Brindisi:      { x: 510,  y: 560 },
+  Palermo:       { x: 410,  y: 605 },
 
   // Balkans
-  Zagrab:        { x: 590,  y: 375 },
-  Sarajevo:      { x: 635,  y: 420 },
-  Sofia:         { x: 700,  y: 450 },
-  Athina:        { x: 685,  y: 525 },
-  Smyrna:        { x: 800,  y: 520 },
-  Bucuresti:     { x: 755,  y: 395 },
-  Constantinople:{ x: 800,  y: 460 },
-  Angora:        { x: 875,  y: 445 },
-  Erzurum:       { x: 965,  y: 430 },
-  Sevastopol:    { x: 845,  y: 370 },
-  Sochi:         { x: 910,  y: 360 },
-  Rostov:        { x: 940,  y: 310 },
-  Kharkov:       { x: 860,  y: 270 },
+  Zagrab:        { x: 475,  y: 425 },
+  Sarajevo:      { x: 515,  y: 470 },
+  Sofia:         { x: 615,  y: 510 },
+  Athina:        { x: 600,  y: 580 },
+  Smyrna:        { x: 690,  y: 605 },
+  Bucuresti:     { x: 660,  y: 462 },
+  Constantinople:{ x: 730,  y: 545 },
+  Angora:        { x: 775,  y: 580 },
+  Erzurum:       { x: 950,  y: 550 },
+  Sevastopol:    { x: 805,  y: 440 },
+  Sochi:         { x: 915,  y: 440 },
+  Rostov:        { x: 910,  y: 350 },
+  Kharkov:       { x: 832,  y: 310 },
 
   // Eastern Europe
-  Kyiv:          { x: 770,  y: 275 },
-  Smolensk:      { x: 785,  y: 205 },
-  Wilno:         { x: 730,  y: 185 },
-  Riga:          { x: 690,  y: 135 },
-  Moskva:        { x: 870,  y: 160 },
+  Kyiv:          { x: 735,  y: 315 },
+  Smolensk:      { x: 755,  y: 180 },
+  Wilno:         { x: 640,  y: 185 },
+  Riga:          { x: 625,  y: 130 },
+  Moskva:        { x: 860,  y: 135 },
 };
 
 export const CITY_NAMES = Object.keys(CITY_COORDS).sort();

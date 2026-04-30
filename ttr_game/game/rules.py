@@ -52,6 +52,9 @@ def legal_actions(state: GameState, asp: ActionSpace) -> List[int]:
     if phase == GamePhase.GAME_OVER:
         return []
 
+    if phase == GamePhase.TUNNEL_RESOLUTION:
+        return [asp.TUNNEL_PAY_IDX, asp.TUNNEL_DECLINE_IDX]
+
     if phase == GamePhase.MEGA_LONG_SELECTION:
         return _legal_mega_long_actions(state, asp)
 
@@ -290,6 +293,12 @@ def step(state: GameState, action_idx: int, asp: ActionSpace,
             pass
         _advance_turn(state)
 
+    elif atype == ActionType.TUNNEL_PAY:
+        reward = _do_tunnel_resolve(state, asp, pay=True)
+
+    elif atype == ActionType.TUNNEL_DECLINE:
+        _do_tunnel_resolve(state, asp, pay=False)
+
     return reward
 
 
@@ -421,7 +430,19 @@ def _do_claim_route(state: GameState, asp: ActionSpace,
                 _refund_route_payment(player, color, color_paid, loco_color_paid, ferry_locos_paid)
                 _advance_turn(state)
                 return 0.0
-            # Pay extra cards
+            if state.interactive_tunnels:
+                # Pause: let the human player decide whether to pay the extra cost.
+                # Base payment cards have already been deducted; store them for later.
+                state.tunnel_route_idx = route_idx
+                state.tunnel_color_idx = action.color_idx
+                state.tunnel_cards = list(tunnel_cards)
+                state.tunnel_extra_cost = extra
+                state.tunnel_color_paid = color_paid
+                state.tunnel_loco_color_paid = loco_color_paid
+                state.tunnel_ferry_locos_paid = ferry_locos_paid
+                state.phase = GamePhase.TUNNEL_RESOLUTION
+                return 0.0
+            # RL auto-resolve: pay extra immediately
             extra_color = min(extra, current_color)
             extra_loco = extra - extra_color
             player.pay_cards(color, extra, locos_used=extra_loco)
@@ -450,6 +471,56 @@ def _refund_route_payment(player: PlayerState, color: str, color_paid: int,
     """Return cards to player's hand after a failed tunnel claim."""
     player.hand[color] = player.hand.get(color, 0) + color_paid
     player.hand[LOCO] = player.hand.get(LOCO, 0) + loco_color_paid + ferry_locos_paid
+
+
+def _do_tunnel_resolve(state: GameState, asp: ActionSpace, pay: bool) -> float:
+    """Complete or cancel a paused TUNNEL_RESOLUTION claim."""
+    player = state.players[state.current_player]
+    route_idx = state.tunnel_route_idx
+    color_idx = state.tunnel_color_idx
+    color = COLORS[color_idx] if color_idx < len(COLORS) else LOCO
+    color_paid = state.tunnel_color_paid
+    loco_color_paid = state.tunnel_loco_color_paid
+    ferry_locos_paid = state.tunnel_ferry_locos_paid
+    extra = state.tunnel_extra_cost
+
+    # Reconstruct the base discard list (cards already taken from hand)
+    base_discard = [color] * color_paid + [LOCO] * (ferry_locos_paid + loco_color_paid)
+
+    # Clear tunnel state
+    state.tunnel_route_idx = None
+    state.tunnel_color_idx = 0
+    state.tunnel_cards = []
+    state.tunnel_extra_cost = 0
+    state.tunnel_color_paid = 0
+    state.tunnel_loco_color_paid = 0
+    state.tunnel_ferry_locos_paid = 0
+
+    if not pay:
+        # Refund base payment and abandon
+        _refund_route_payment(player, color, color_paid, loco_color_paid, ferry_locos_paid)
+        _advance_turn(state)
+        return 0.0
+
+    # Pay extra cards and complete the claim
+    current_color = player.hand.get(color, 0)
+    extra_color = min(extra, current_color)
+    extra_loco = extra - extra_color
+    player.pay_cards(color, extra, locos_used=extra_loco)
+    all_discard = base_discard + [color] * extra_color + [LOCO] * extra_loco
+    state.discard.extend(all_discard)
+
+    route = state.board.routes[route_idx]
+    state.claimed_routes[route_idx] = state.current_player
+    player.trains -= route.length
+    points = TRAIN_SCORING.get(route.length, 0)
+    player.score += points
+
+    if (player.trains <= FINAL_ROUND_TRIGGER and state.final_round_starter is None):
+        state.final_round_starter = state.current_player
+
+    _advance_turn(state)
+    return float(points)
 
 
 def _do_place_station(state: GameState, asp: ActionSpace, action: Action) -> None:
@@ -482,6 +553,58 @@ def _advance_turn(state: GameState) -> None:
 # ---------------------------------------------------------------------------
 # Scoring
 # ---------------------------------------------------------------------------
+
+def final_score_breakdown(state: GameState) -> List[dict]:
+    """
+    Return a per-player breakdown of how the final score is composed:
+      route_score         — points earned from claimed routes
+      unused_stations     — number of station tokens not placed
+      station_bonus       — unused_stations × 4
+      tickets             — list of {city1, city2, points, completed}
+      ticket_total        — net ticket points (+completed, -failed)
+      longest_route_length— length of each player's longest continuous path
+      longest_route_bonus — LONGEST_ROUTE_BONUS if this player holds the record
+      total               — final score
+    """
+    lengths = [_longest_route(p, state) for p in state.players]
+    max_length = max(lengths) if lengths else 0
+
+    breakdowns = []
+    for i, player in enumerate(state.players):
+        station_bonus = player.stations * 4
+
+        player_routes = _player_route_set(player, state)
+        borrowed = _optimal_station_routes(player, state, player_routes)
+        all_routes = player_routes | borrowed
+
+        ticket_results = []
+        ticket_total = 0
+        for ticket in player.tickets:
+            completed = _cities_connected(ticket.city1, ticket.city2, all_routes, state.board)
+            delta = ticket.points if completed else -ticket.points
+            ticket_total += delta
+            ticket_results.append({
+                "city1": ticket.city1,
+                "city2": ticket.city2,
+                "points": ticket.points,
+                "completed": completed,
+            })
+
+        longest_bonus = LONGEST_ROUTE_BONUS if (max_length >= 1 and lengths[i] == max_length) else 0
+
+        breakdowns.append({
+            "route_score": player.score,
+            "unused_stations": player.stations,
+            "station_bonus": station_bonus,
+            "tickets": ticket_results,
+            "ticket_total": ticket_total,
+            "longest_route_length": lengths[i],
+            "longest_route_bonus": longest_bonus,
+            "total": player.score + station_bonus + ticket_total + longest_bonus,
+        })
+
+    return breakdowns
+
 
 def final_scores(state: GameState) -> List[int]:
     """

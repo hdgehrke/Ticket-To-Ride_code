@@ -37,6 +37,8 @@ class ActionType(IntEnum):
     KEEP_INIT_TICKETS = 6
     CLAIM_ROUTE = 7
     PLACE_STATION = 8
+    TUNNEL_PAY = 9
+    TUNNEL_DECLINE = 10
 
 
 @dataclass(frozen=True)
@@ -102,7 +104,10 @@ class ActionSpace:
         self.PLACE_STATION_BASE = (
             self.CLAIM_ROUTE_BASE + self.num_routes * self.NUM_COLORS_PER_ROUTE
         )
-        self.total = self.PLACE_STATION_BASE + self.num_cities * self.NUM_COLORS_PER_STATION
+        _station_total = self.PLACE_STATION_BASE + self.num_cities * self.NUM_COLORS_PER_STATION
+        self.TUNNEL_PAY_IDX = _station_total
+        self.TUNNEL_DECLINE_IDX = _station_total + 1
+        self.total = _station_total + 2
 
         # Build idx → Action and Action → idx mappings
         self._idx_to_action: List[Action] = [None] * self.total  # type: ignore
@@ -152,6 +157,10 @@ class ActionSpace:
                 idx = self.PLACE_STATION_BASE + city_idx * self.NUM_COLORS_PER_STATION + color_idx
                 a = Action(ActionType.PLACE_STATION, slot=city_idx, color_idx=color_idx)
                 self._register(idx, a)
+
+        # Tunnel resolution (active only during TUNNEL_RESOLUTION phase)
+        self._register(self.TUNNEL_PAY_IDX,     Action(ActionType.TUNNEL_PAY))
+        self._register(self.TUNNEL_DECLINE_IDX, Action(ActionType.TUNNEL_DECLINE))
 
     def decode(self, idx: int) -> Action:
         return self._idx_to_action[idx]

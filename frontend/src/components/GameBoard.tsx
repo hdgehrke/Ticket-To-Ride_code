@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useGameWS } from "../api/ws";
 import { MapSVG } from "./MapSVG";
 import { FaceUpCards } from "./FaceUpCards";
@@ -6,6 +7,8 @@ import { TicketPanel } from "./TicketPanel";
 import { Scoreboard } from "./Scoreboard";
 import { ActionBar } from "./ActionBar";
 import { GameOver } from "./GameOver";
+import { TunnelModal } from "./TunnelModal";
+import type { Ticket } from "../types";
 
 interface Props {
   sessionId: string;
@@ -15,6 +18,7 @@ interface Props {
 
 export function GameBoard({ sessionId, playerIdx, onLeave }: Props) {
   const { publicState, privateState, gameOver, error, connected, sendAction } = useGameWS(sessionId, playerIdx);
+  const [hoveredTicket, setHoveredTicket] = useState<Ticket | null>(null);
 
   if (!connected && !publicState) {
     return (
@@ -26,7 +30,7 @@ export function GameBoard({ sessionId, playerIdx, onLeave }: Props) {
   }
 
   if (gameOver) {
-    return <GameOver scores={gameOver.scores} players={gameOver.players} onNewGame={onLeave} />;
+    return <GameOver scores={gameOver.scores} players={gameOver.players} breakdown={gameOver.breakdown} onNewGame={onLeave} />;
   }
 
   if (!publicState || !privateState) {
@@ -45,10 +49,23 @@ export function GameBoard({ sessionId, playerIdx, onLeave }: Props) {
     sendAction(phase === "SECOND_DRAW" ? 12 : 5);
   }
 
+  const isTunnelResolution = publicState.phase === "TUNNEL_RESOLUTION";
+
   return (
     <div className="game-board">
       {error && (
         <div className="error-toast">{error}</div>
+      )}
+
+      {isTunnelResolution && publicState.tunnel_cards && (
+        <TunnelModal
+          revealedCards={publicState.tunnel_cards}
+          extraCost={publicState.tunnel_extra_cost ?? 0}
+          payAction={publicState.tunnel_pay_action!}
+          declineAction={publicState.tunnel_decline_action!}
+          isMyTurn={isMyTurn}
+          onAction={sendAction}
+        />
       )}
 
       <div className="board-layout">
@@ -58,6 +75,8 @@ export function GameBoard({ sessionId, playerIdx, onLeave }: Props) {
             publicState={publicState}
             privateState={privateState}
             isMyTurn={isMyTurn}
+            playerIdx={playerIdx}
+            hoveredTicket={hoveredTicket}
             onAction={sendAction}
           />
         </div>
@@ -94,6 +113,7 @@ export function GameBoard({ sessionId, playerIdx, onLeave }: Props) {
             phase={phase}
             onKeepTickets={sendAction}
             onDrawTickets={() => sendAction(6)}
+            onTicketHover={setHoveredTicket}
           />
           <button onClick={onLeave} className="btn-small leave-btn">Leave Game</button>
         </div>

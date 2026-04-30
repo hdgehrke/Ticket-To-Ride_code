@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 from ..game.actions import ActionSpace, Action
-from ..game.rules import final_scores, is_terminal, legal_actions, step
+from ..game.rules import final_score_breakdown, final_scores, is_terminal, legal_actions, step
 from ..game.state import GameState, GamePhase, setup_game
 from ..env.ttr_env import _board_singleton, _action_space_singleton
 
@@ -52,6 +52,9 @@ class GameSession:
     def final_scores(self) -> List[int]:
         return final_scores(self.state)
 
+    def final_score_breakdown(self) -> List[dict]:
+        return final_score_breakdown(self.state)
+
     def to_dict(self) -> dict:
         """Serialise game state to JSON-safe dict for the frontend."""
         state = self.state
@@ -82,6 +85,11 @@ class GameSession:
                 str(route_idx): owner
                 for route_idx, owner in state.claimed_routes.items()
             },
+            "cities": list(board.cities),
+            "tunnel_cards": list(state.tunnel_cards) if state.tunnel_cards else None,
+            "tunnel_extra_cost": state.tunnel_extra_cost if state.tunnel_cards else None,
+            "tunnel_pay_action": self.asp.TUNNEL_PAY_IDX if state.tunnel_cards else None,
+            "tunnel_decline_action": self.asp.TUNNEL_DECLINE_IDX if state.tunnel_cards else None,
             "routes": [
                 {
                     "index": i,
@@ -146,7 +154,7 @@ class SessionManager:
         rng = random.Random(seed)
         board = _board_singleton()
         asp = _action_space_singleton()
-        state = setup_game(len(player_names), seed=seed)
+        state = setup_game(len(player_names), seed=seed, interactive_tunnels=True)
         players = [
             Player(player_id=i, name=name, is_ai=(i in ai_players))
             for i, name in enumerate(player_names)

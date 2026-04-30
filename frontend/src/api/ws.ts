@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { PublicState, PrivateState, ServerMessage } from "../types";
+import type { PublicState, PrivateState, ServerMessage, PlayerScoreBreakdown } from "../types";
 
 const WS_BASE = `ws://${window.location.hostname}:8000`;
 
 interface GameWSState {
   publicState: PublicState | null;
   privateState: PrivateState | null;
-  gameOver: { scores: number[]; players: string[] } | null;
+  gameOver: { scores: number[]; players: string[]; breakdown: PlayerScoreBreakdown[] } | null;
   error: string | null;
   connected: boolean;
 }
@@ -64,7 +64,7 @@ export function useGameWS(sessionId: string, playerIdx: number): UseGameWSReturn
       } else if (msg.type === "game_over") {
         setState(s => ({
           ...s,
-          gameOver: { scores: msg.scores, players: msg.players },
+          gameOver: { scores: msg.scores, players: msg.players, breakdown: msg.breakdown },
         }));
       }
     };
