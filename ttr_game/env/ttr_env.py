@@ -212,22 +212,20 @@ class TicketToRideEnv(AECEnv):
         # Apply action
         reward = step(self._state, action, self._asp, self._rng) * REWARD_SCALE
         self._rewards[current_agent] = reward
-        self._cumulative_rewards[current_agent] += reward
 
         # Check terminal
         if is_terminal(self._state):
             scores = final_scores(self._state)
-            # Distribute final rewards
             for i, agent in enumerate(self.possible_agents):
                 final_r = float(scores[i]) * REWARD_SCALE
                 self._rewards[agent] += final_r
-                self._cumulative_rewards[agent] += final_r
                 self._terminations[agent] = True
+            self._accumulate_rewards()
+            self.agents = []  # episode over; agent_iter() stops
         else:
             # Advance agent selector to match current_player in game state
             self.agent_selection = self.possible_agents[self._state.current_player]
-
-        self._accumulate_rewards()
+            self._accumulate_rewards()
 
     def observe(self, agent: str) -> dict:
         player_idx = int(agent.split("_")[1])
@@ -461,22 +459,25 @@ try:
             self._env.step(action)
 
             rewards, terminations, truncations, infos, obs_dict = {}, {}, {}, {}, {}
-            current_next = self._env.agent_selection
-            obs_dict[current_next] = self._env.observe(current_next)
-            rewards[current] = self._env._rewards.get(current, 0.0)
 
             done = all(self._env._terminations.values())
             terminations["__all__"] = done
             truncations["__all__"] = False
 
-            for agent in self._env.agents:
+            for agent in self._env.possible_agents:
                 terminations[agent] = self._env._terminations[agent]
                 truncations[agent] = self._env._truncations[agent]
                 infos[agent] = self._env._infos[agent]
 
             if done:
+                # All agents receive their final score rewards on the terminal step
                 for agent in self._env.possible_agents:
                     obs_dict[agent] = self._env.observe(agent)
+                    rewards[agent] = self._env._rewards.get(agent, 0.0)
+            else:
+                current_next = self._env.agent_selection
+                obs_dict[current_next] = self._env.observe(current_next)
+                rewards[current] = self._env._rewards.get(current, 0.0)
 
             return obs_dict, rewards, terminations, truncations, infos
 

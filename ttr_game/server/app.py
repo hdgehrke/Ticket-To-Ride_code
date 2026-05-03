@@ -173,7 +173,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str, player_idx: 
                 # If next player is AI, trigger AI move
                 await _maybe_play_ai(session_id, session)
 
-    except WebSocketDisconnect:
+    except (WebSocketDisconnect, RuntimeError):
         logger.info(f"Player {player_idx} disconnected from session {session_id}")
     finally:
         conns = _connections.get(session_id, {})

@@ -92,21 +92,28 @@ export function TicketPanel({
         </div>
       )}
 
-      {/* Current tickets */}
+      {/* Current tickets — incomplete first, then complete */}
       <div className="ticket-list">
         {tickets.length === 0 && <p className="muted">No tickets yet.</p>}
-        {tickets.map((t, i) => (
-          <div
-            key={i}
-            className="ticket-item"
-            onMouseEnter={() => onTicketHover(t)}
-            onMouseLeave={() => onTicketHover(null)}
-          >
-            <span>{t.city1} → {t.city2}</span>
-            <span className="ticket-pts">{t.points}pts</span>
-            {t.is_long && <span className="long-badge">Long</span>}
-          </div>
-        ))}
+        {[...tickets]
+          .sort((a, b) => {
+            const aComplete = a.completed ?? false;
+            const bComplete = b.completed ?? false;
+            return Number(aComplete) - Number(bComplete);
+          })
+          .map((t, i) => (
+            <div
+              key={i}
+              className={`ticket-item ${t.completed ? "ticket-item--done" : "ticket-item--todo"}`}
+              onMouseEnter={() => onTicketHover(t)}
+              onMouseLeave={() => onTicketHover(null)}
+            >
+              <span className="ticket-status">{t.completed ? "✓" : "○"}</span>
+              <span className="ticket-route">{t.city1} → {t.city2}</span>
+              <span className="ticket-pts">{t.points}pts</span>
+              {t.is_long && <span className="long-badge">L</span>}
+            </div>
+          ))}
       </div>
 
       {canDrawTickets && (

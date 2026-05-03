@@ -45,6 +45,7 @@ export interface Ticket {
   city2: string;
   points: number;
   is_long: boolean;
+  completed?: boolean; // present in hand tickets; absent in pending tickets
 }
 
 export interface PrivateState {

@@ -9,7 +9,10 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 from ..game.actions import ActionSpace, Action
-from ..game.rules import final_score_breakdown, final_scores, is_terminal, legal_actions, step
+from ..game.rules import (
+    final_score_breakdown, final_scores, is_terminal, legal_actions,
+    player_ticket_completions, step,
+)
 from ..game.state import GameState, GamePhase, setup_game
 from ..env.ttr_env import _board_singleton, _action_space_singleton
 
@@ -108,6 +111,7 @@ class GameSession:
     def player_private_view(self, player_idx: int) -> dict:
         """Private data only visible to a specific player."""
         player = self.state.players[player_idx]
+        completions = player_ticket_completions(self.state, player_idx)
         return {
             "hand": dict(player.hand),
             "tickets": [
@@ -116,8 +120,9 @@ class GameSession:
                     "city2": t.city2,
                     "points": t.points,
                     "is_long": t.is_long,
+                    "completed": completions[i],
                 }
-                for t in player.tickets
+                for i, t in enumerate(player.tickets)
             ],
             "pending_tickets": [
                 {

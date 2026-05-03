@@ -658,6 +658,18 @@ def _ticket_completed(ticket: DestinationTicket, player: PlayerState,
     return _cities_connected(ticket.city1, ticket.city2, player_routes | borrowed, state.board)
 
 
+def player_ticket_completions(state: GameState, player_idx: int) -> List[bool]:
+    """Return a per-ticket completion flag list for mid-game display."""
+    player = state.players[player_idx]
+    player_routes = _player_route_set(player, state)
+    borrowed = _optimal_station_routes(player, state, player_routes)
+    all_routes = player_routes | borrowed
+    return [
+        _cities_connected(t.city1, t.city2, all_routes, state.board)
+        for t in player.tickets
+    ]
+
+
 def _player_route_set(player: PlayerState, state: GameState) -> Set[int]:
     """Return set of route indices claimed by this player."""
     return {idx for idx, pid in state.claimed_routes.items() if pid == player.player_id}

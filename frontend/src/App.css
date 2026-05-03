@@ -255,15 +255,33 @@ input[type="text"], input:not([type="checkbox"]):not([type="radio"]) {
 .ticket-list { display: flex; flex-direction: column; gap: 4px; }
 .ticket-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   font-size: 12px;
   padding: 4px 6px;
-  background: #111827;
   border-radius: 4px;
-  gap: 6px;
+  gap: 5px;
 }
-.ticket-pts { color: #FDE68A; font-weight: 600; }
+.ticket-item--todo {
+  background: #1e2d1e;
+  border: 1px solid #374151;
+  color: #F9FAFB;
+}
+.ticket-item--done {
+  background: #111827;
+  border: 1px solid transparent;
+  color: #6B7280;
+}
+.ticket-status {
+  flex-shrink: 0;
+  width: 14px;
+  font-size: 11px;
+}
+.ticket-item--todo  .ticket-status { color: #FCA5A5; }
+.ticket-item--done  .ticket-status { color: #4ADE80; }
+.ticket-route { flex: 1; }
+.ticket-item--done  .ticket-route { text-decoration: line-through; }
+.ticket-pts { color: #FDE68A; font-weight: 600; flex-shrink: 0; }
+.ticket-item--done  .ticket-pts { color: #6B7280; font-weight: 400; }
 .muted { color: #6B7280; font-size: 12px; }
 
 .draw-tickets-btn { width: 100%; margin-top: 8px; text-align: center; }
